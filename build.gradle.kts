@@ -23,16 +23,16 @@ intellij {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "17"
     }
 
     patchPluginXml {
-        sinceBuild.set("211")
-        untilBuild.set("222.*")
+        sinceBuild.set("222")
+        untilBuild.set("233.*")
     }
 
     signPlugin {
@@ -46,6 +46,6 @@ tasks {
     }
 
     runIde {
-        ideDir.set(file("C:\\Program Files\\JetBrains\\PhpStorm 2021.1.4"))
+        ideDir.set(file("C:\\Program Files\\JetBrains\\PhpStorm 2023.3.4"))
     }
 }

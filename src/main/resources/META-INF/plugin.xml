@@ -26,18 +26,23 @@
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
-    <extensions defaultExtensionNs="com.intellij">
+    <!--<extensions defaultExtensionNs="com.intellij">
         <codeInsight.inlayProvider
                 order="last"
                 language="PHP"
                 implementationClass="com.wuguanping.zchelper.MultiLanguageHintsProvider"/>
-    </extensions>
+    </extensions>-->
 
 
     <actions>
         <action id="InstanceClass" class="com.wuguanping.zchelper.InstanceClassAction" text="Instance Class">
             <add-to-group group-id="CodeMenu" anchor="before" relative-to-action="Generate"/>
             <keyboard-shortcut keymap="$default" first-keystroke="shift R"/>
+        </action>
+
+        <action class="com.wuguanping.zchelper.ResetAction" id="com.wuguanping.zchelper.ResetAction">
+            <add-to-group group-id="HelpMenu" anchor="last"/>
+            <add-to-group group-id="WelcomeScreen.Documentation" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>
