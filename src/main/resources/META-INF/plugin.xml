@@ -23,7 +23,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <depends>com.jetbrains.php</depends>
-
+    
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <!--<extensions defaultExtensionNs="com.intellij">
@@ -43,6 +43,10 @@
         <action class="com.wuguanping.zchelper.ResetAction" id="com.wuguanping.zchelper.ResetAction">
             <add-to-group group-id="HelpMenu" anchor="last"/>
             <add-to-group group-id="WelcomeScreen.Documentation" anchor="last"/>
+        </action>
+        <action id="com.wuguanping.zchelper.GetApiPath" class="com.wuguanping.zchelper.GetApiPathAction" text="Get Api Path"
+                description="获取api的访问路径">
+            <add-to-group group-id="EditorPopupMenu2" anchor="first"/>
         </action>
     </actions>
 </idea-plugin>
