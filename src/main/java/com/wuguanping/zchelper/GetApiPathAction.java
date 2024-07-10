@@ -28,8 +28,13 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Properties;
 
 public class GetApiPathAction extends AnAction {
 
@@ -39,16 +44,48 @@ public class GetApiPathAction extends AnAction {
         if (apiPath == null) {
             return;
         }
+
+        String apiHost = getApiHost(e);
+        if (apiHost != null) {
+            apiPath = apiHost + "/" + apiPath;
+        }
+
         StringSelection stringSelection = new StringSelection(apiPath);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
     }
 
-    private String getApiPath(AnActionEvent e) {
+    private String getApiHost(AnActionEvent e) {
+        try {
+            Project project = e.getProject();
+            if (project == null) {
+                return null;
+            }
+
+            String basePath = e.getProject().getBasePath();
+            Properties properties = new Properties();
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath + "/api/.env.dev"));
+            properties.load(bufferedReader);
+            String apiHost = properties.getProperty("API_HOST");
+            System.out.println("start get apiHost");
+            System.out.println(apiHost);
+
+            return apiHost.trim();
+        } catch (IOException ex) {
+            System.out.println(ex);
+        }
+
+        return null;
+    }
+
+    private String getApiPath(AnActionEvent e)  {
         if (e == null) {
             System.out.println("e is null");
             return null;
         }
+
+
+
 
         System.out.println("start GetApiPathAction");
         PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
