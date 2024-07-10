@@ -67,8 +67,9 @@ public class GetApiPathAction extends AnAction {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath + "/api/.env.dev"));
             properties.load(bufferedReader);
             String apiHost = properties.getProperty("API_HOST");
-            System.out.println("start get apiHost");
-            System.out.println(apiHost);
+            if (apiHost == null) {
+                return null;
+            }
 
             return apiHost.trim();
         } catch (IOException ex) {
