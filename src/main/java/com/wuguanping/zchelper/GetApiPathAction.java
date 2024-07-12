@@ -28,10 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -63,8 +60,22 @@ public class GetApiPathAction extends AnAction {
             }
 
             String basePath = e.getProject().getBasePath();
+
+            String filePath = basePath + "/api/.env.dev";
+            File file = new File(filePath);
+            if (!file.exists()) {
+                System.out.println("filePath" + filePath + " not exists");
+                filePath = basePath + "/.env.dev";
+                file = new File(filePath);
+            }
+
+            if (!file.exists()) {
+                System.out.println("filePath" + filePath + " not exists");
+                return null;
+            }
+
             Properties properties = new Properties();
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(basePath + "/api/.env.dev"));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
             properties.load(bufferedReader);
             String apiHost = properties.getProperty("API_HOST");
             if (apiHost == null) {
