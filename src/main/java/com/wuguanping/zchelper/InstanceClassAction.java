@@ -39,7 +39,7 @@ public class InstanceClassAction extends AnAction {
             System.out.println("project is null");
             return;
         }
-        PhpTreeClassChooserDialog phpTreeClassChooserDialog = new PhpTreeClassChooserDialog("类选中", project, null);
+        PhpTreeClassChooserDialog phpTreeClassChooserDialog = new PhpTreeClassChooserDialog("选择要引入的类", project, null);
         phpTreeClassChooserDialog.showDialog();
         PhpClass selected = phpTreeClassChooserDialog.getSelected();
         if (selected == null) {
@@ -47,10 +47,6 @@ public class InstanceClassAction extends AnAction {
         }
 
         String selectedClassName = selected.getName();
-        if (selectedClassName == null) {
-            System.out.println("selectedClassName is null");
-            return;
-        }
         String varName = StringUtils.uncapitalize(selectedClassName);
 
         Editor editor = CommonDataKeys.EDITOR.getData(e.getDataContext());
@@ -85,8 +81,7 @@ public class InstanceClassAction extends AnAction {
         Field[] fields = phpClass.getOwnFields();
         String preFieldName = null;
         int insertPos = 0;
-        for (int i = 0; i < fields.length; i++) {
-            Field field = fields[i];
+        for (Field field : fields) {
             ASTNode node = field.getNode();
             if (node == null) {
                 continue;
