@@ -5,6 +5,8 @@ import com.intellij.ide.util.gotoByName.DefaultChooseByNameItemProvider;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Processor;
+import com.intellij.util.indexing.FindSymbolParameters;
+import com.wuguanping.zchelper.util.UrlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +22,9 @@ public class FilterByUrlProvider extends DefaultChooseByNameItemProvider {
         if (pattern.contains("?")) {
             pattern = pattern.substring(0, pattern.indexOf("?"));
         }
-        pattern = pattern.replace("_", "");
+        pattern = UrlUtil.toUndline(pattern);
+
         return super.filterElements(base, pattern, everywhere, indicator, consumer);
     }
+
 }

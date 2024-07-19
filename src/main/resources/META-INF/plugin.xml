@@ -35,22 +35,25 @@
 
 
     <actions>
-        <action id="InstanceClass" class="com.wuguanping.zchelper.InstanceClassAction" text="Instance Class">
+        <action id="com.wuguanping.zchelper.InstanceClassAction" class="com.wuguanping.zchelper.InstanceClassAction" text="Instance Class">
             <add-to-group group-id="CodeMenu" anchor="before" relative-to-action="Generate"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="shift R"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt NUMPAD1"/>
         </action>
 
         <action id="com.wuguanping.zchelper.SearchMethodByUrlAction" class="com.wuguanping.zchelper.SearchMethodByUrlAction" text="Search Method By Url">
-            <add-to-group group-id="CodeMenu" anchor="before" relative-to-action="InstanceClass"/>
+            <add-to-group group-id="CodeMenu" anchor="before" relative-to-action="com.wuguanping.zchelper.InstanceClassAction"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt NUMPAD2"/>
         </action>
 
         <action class="com.wuguanping.zchelper.ResetAction" id="com.wuguanping.zchelper.ResetAction">
             <add-to-group group-id="HelpMenu" anchor="last"/>
             <add-to-group group-id="WelcomeScreen.Documentation" anchor="last"/>
         </action>
-        <action id="com.wuguanping.zchelper.GetApiPath" class="com.wuguanping.zchelper.GetApiPathAction" text="Get Api Path"
+
+        <action id="com.wuguanping.zchelper.GetApiPath" class="com.wuguanping.zchelper.GetApiPathAction" text="Copy Api Path"
                 description="获取api的访问路径">
             <add-to-group group-id="EditorPopupMenu2" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift C"/>
         </action>
     </actions>
 </idea-plugin>

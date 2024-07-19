@@ -49,7 +49,7 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
                         Method method = (Method) element;
                         if (method.getAccess().isPublic() && !method.getName().equals("__construct")) {
                             String url = "/" + urlPath + "/" + UrlUtil.toUndline(((Method) element).getName());
-                            listTemp.add(new FilterByUrlNavigationItem(url.replace("_", ""), method));
+                            listTemp.add(new FilterByUrlNavigationItem(url, method));
                         }
                     }
                     super.visitElement(element);
