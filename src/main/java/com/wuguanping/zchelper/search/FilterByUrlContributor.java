@@ -15,6 +15,7 @@ import com.wuguanping.zchelper.util.UrlUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class FilterByUrlContributor implements ChooseByNameContributor {
@@ -25,6 +26,10 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
     }
 
     private void initList(Project project) {
+        if (!this.list.isEmpty()) {
+            return;
+        }
+
         String dirPath = project.getBasePath() + "/app/libs/controller";
         if (!FileUtil.isDir(dirPath)) {
             dirPath = project.getBasePath() + "/api/app/libs/controller";
