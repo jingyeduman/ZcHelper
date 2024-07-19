@@ -29,8 +29,7 @@ public class FileUtil {
                 findFiles(tempFile.getAbsolutePath(), targetFileName, fileList);
             }else if(tempFile.isFile()){
                 tempName = tempFile.getName();
-
-                if(wildcardMatch(targetFileName, tempName)){
+                if(tempName.contains(targetFileName)){
                     // 匹配成功，将文件名添加到结果集
                     fileList.add(tempFile.getAbsolutePath());
                 }

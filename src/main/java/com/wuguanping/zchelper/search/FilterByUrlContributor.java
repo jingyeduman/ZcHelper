@@ -40,8 +40,8 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
         }
 
         ArrayList<String> filePaths = new ArrayList<>();
-        FileUtil.findFiles(dirPath, "*Controller.php", filePaths);
-
+        FileUtil.findFiles(dirPath, "Controller.php", filePaths);
+        
         List<FilterByUrlNavigationItem> listTemp = new ArrayList<>();
         ArrayList<String> namesTemp = new ArrayList<>();
 
