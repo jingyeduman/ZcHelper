@@ -40,6 +40,10 @@
             <keyboard-shortcut keymap="$default" first-keystroke="shift R"/>
         </action>
 
+        <action id="com.wuguanping.zchelper.SearchMethodByUrlAction" class="com.wuguanping.zchelper.SearchMethodByUrlAction" text="Search Method By Url">
+            <add-to-group group-id="CodeMenu" anchor="before" relative-to-action="InstanceClass"/>
+        </action>
+
         <action class="com.wuguanping.zchelper.ResetAction" id="com.wuguanping.zchelper.ResetAction">
             <add-to-group group-id="HelpMenu" anchor="last"/>
             <add-to-group group-id="WelcomeScreen.Documentation" anchor="last"/>

@@ -21,6 +21,7 @@ import com.jetbrains.php.lang.psi.elements.Method;
 import com.jetbrains.php.lang.psi.elements.PhpClass;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import com.intellij.ide.util.TreeChooser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,6 +40,7 @@ public class InstanceClassAction extends AnAction {
             System.out.println("project is null");
             return;
         }
+
         PhpTreeClassChooserDialog phpTreeClassChooserDialog = new PhpTreeClassChooserDialog("选择要引入的类", project, null);
         phpTreeClassChooserDialog.showDialog();
         PhpClass selected = phpTreeClassChooserDialog.getSelected();

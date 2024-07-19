@@ -96,9 +96,6 @@ public class GetApiPathAction extends AnAction {
             return null;
         }
 
-
-
-
         System.out.println("start GetApiPathAction");
         PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
         if (file == null) {
