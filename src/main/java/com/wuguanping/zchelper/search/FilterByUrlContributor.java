@@ -26,6 +26,10 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
 
     private void initList(Project project) {
         String dirPath = project.getBasePath() + "/app/libs/controller";
+        if (!FileUtil.isDir(dirPath)) {
+            dirPath = project.getBasePath() + "/api/app/libs/controller";
+        }
+
         ArrayList<String> filePaths = new ArrayList<>();
         FileUtil.findFiles(dirPath, "*Controller.php", filePaths);
 

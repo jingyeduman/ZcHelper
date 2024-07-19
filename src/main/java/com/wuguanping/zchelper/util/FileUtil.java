@@ -4,11 +4,21 @@ import java.io.File;
 import java.util.List;
 
 public class FileUtil {
+    public static boolean isDir(String baseDirName) {
+        File baseDir = new File(baseDirName);		// 创建一个File对象
+        if (!baseDir.exists() || !baseDir.isDirectory()) {	// 判断目录是否存在
+            return false;
+        }
+
+        return true;
+    }
+
     public static void findFiles(String baseDirName, String targetFileName, List<String> fileList) {
         File baseDir = new File(baseDirName);		// 创建一个File对象
         if (!baseDir.exists() || !baseDir.isDirectory()) {	// 判断目录是否存在
-            System.out.println("文件查找失败：" + baseDirName + "不是一个目录！");
+           return;
         }
+
         String tempName = null;
         //判断目录是否存在
         File tempFile;
