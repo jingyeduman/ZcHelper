@@ -20,15 +20,19 @@ import java.util.List;
 
 public class FilterByUrlContributor implements ChooseByNameContributor {
     List<FilterByUrlNavigationItem> list = new ArrayList<>();
+    String[] names = new String[0];
 
-    public FilterByUrlContributor() {
-
+    public FilterByUrlContributor(Project project) {
+        this.initList(project);
     }
 
     private void initList(Project project) {
         if (!this.list.isEmpty()) {
             return;
         }
+
+        System.out.println("start initList " + project.getBasePath());
+        System.out.println("start initList " + this.list.toArray().length);
 
         String dirPath = project.getBasePath() + "/app/libs/controller";
         if (!FileUtil.isDir(dirPath)) {
@@ -39,6 +43,8 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
         FileUtil.findFiles(dirPath, "*Controller.php", filePaths);
 
         List<FilterByUrlNavigationItem> listTemp = new ArrayList<>();
+        ArrayList<String> namesTemp = new ArrayList<>();
+
         for (String filePath : filePaths) {
             VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(filePath);
             if (fileByPath == null) {
@@ -59,6 +65,7 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
                         if (method.getAccess().isPublic() && !method.getName().equals("__construct")) {
                             String url = "/" + urlPath + "/" + UrlUtil.toUndline(((Method) element).getName());
                             listTemp.add(new FilterByUrlNavigationItem(url, method));
+                            namesTemp.add(url);
                         }
                     }
                     super.visitElement(element);
@@ -66,7 +73,9 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
             });
         }
 
+
         list = listTemp;
+        names = namesTemp.toArray(String[]::new);
     }
 
     /**
@@ -79,8 +88,7 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
     @NotNull
     @Override
     public String[] getNames(Project project, boolean b) {
-        this.initList(project);
-        return this.list.parallelStream().map(FilterByUrlNavigationItem::getValue).toArray(String[]::new);
+        return names;
     }
 
     /**
