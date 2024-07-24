@@ -9,21 +9,87 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiRecursiveElementVisitor;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.stubs.StubIndex;
+import com.intellij.util.Processor;
+import com.intellij.util.indexing.FindSymbolParameters;
 import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpClassIndex;
+import com.jetbrains.php.lang.psi.stubs.indexes.PhpMethodIndex;
 import com.wuguanping.zchelper.util.FileUtil;
 import com.wuguanping.zchelper.util.UrlUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collection;
 import java.util.List;
 
 public class FilterByUrlContributor implements ChooseByNameContributor {
+
+
     List<FilterByUrlNavigationItem> list = new ArrayList<>();
     String[] names = new String[0];
 
     public FilterByUrlContributor(Project project) {
-        this.initList(project);
+        //this.initList(project);
+        this.initListV2(project);
+    }
+
+    private void initListV2(Project project) {
+        if (!this.list.isEmpty()) {
+            return;
+        }
+        System.out.println("start initListV2 ");
+        long stime = System.currentTimeMillis();
+
+        List<FilterByUrlNavigationItem> listTemp = new ArrayList<>();
+        ArrayList<String> namesTemp = new ArrayList<>();
+
+        GlobalSearchScope globalSearchScope = FindSymbolParameters.searchScopeFor(project, false);
+        StubIndex index = StubIndex.getInstance();
+        System.out.println("initListV2 start loop");
+        index.processAllKeys(PhpClassIndex.KEY, key -> {
+            if (key == null) {
+                return true;
+            }
+
+            if (!key.endsWith("controller")) {
+                return true;
+            }
+
+            index.processElements(PhpClassIndex.KEY, key, project, globalSearchScope, PhpClass.class, file -> {
+                PsiFile containingFile = file.getContainingFile();
+                if (containingFile == null) {
+                    return true;
+                }
+
+                Collection<Method> methods = file.getMethods();
+                if (methods == null || methods.isEmpty()) {
+                    return true;
+                }
+
+                String urlPath = UrlUtil.getUrlPathByPsiFile(containingFile);
+                for (Method method : methods) {
+                    if (method.getAccess().isPublic() && !method.getName().equals("__construct")) {
+                        String url = "/" + urlPath + "/" + UrlUtil.toUndline(method.getName());
+                        listTemp.add(new FilterByUrlNavigationItem(url, method));
+                        namesTemp.add(url);
+                    }
+                }
+
+                return true;
+            });
+            return true;
+        }, globalSearchScope);
+
+        System.out.println("initListV2 end loop");
+        list = listTemp;
+        names = namesTemp.toArray(String[]::new);
+        long etime = System.currentTimeMillis();
+        // 计算执行时间
+        System.out.printf("initListV2 执行：%d 毫秒.", (etime - stime));
+        System.out.println("end initListV2 ");
     }
 
     private void initList(Project project) {
@@ -31,20 +97,21 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
             return;
         }
 
-        System.out.println("start initList " + project.getBasePath());
-        System.out.println("start initList " + this.list.toArray().length);
+        System.out.println("start initList ");
+        long stime = System.currentTimeMillis();
 
         String dirPath = project.getBasePath() + "/app/libs/controller";
         if (!FileUtil.isDir(dirPath)) {
             dirPath = project.getBasePath() + "/api/app/libs/controller";
         }
-
+        System.out.println("start initList dirPath " + dirPath);
         ArrayList<String> filePaths = new ArrayList<>();
         FileUtil.findFiles(dirPath, "Controller.php", filePaths);
         
         List<FilterByUrlNavigationItem> listTemp = new ArrayList<>();
         ArrayList<String> namesTemp = new ArrayList<>();
 
+        System.out.println("start initList start loop  ");
         for (String filePath : filePaths) {
             VirtualFile fileByPath = LocalFileSystem.getInstance().findFileByPath(filePath);
             if (fileByPath == null) {
@@ -76,6 +143,10 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
 
         list = listTemp;
         names = namesTemp.toArray(String[]::new);
+
+        long etime = System.currentTimeMillis();
+        // 计算执行时间
+        System.out.printf("initList 执行：%d 毫秒.", (etime - stime));
     }
 
     /**
