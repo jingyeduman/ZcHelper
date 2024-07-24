@@ -22,6 +22,7 @@ import com.wuguanping.zchelper.util.UrlUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -40,6 +41,11 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
         if (!this.list.isEmpty()) {
             return;
         }
+
+        if (project == null) {
+            return;
+        }
+
         System.out.println("start initListV2 ");
         long stime = System.currentTimeMillis();
 
@@ -49,39 +55,45 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
         GlobalSearchScope globalSearchScope = FindSymbolParameters.searchScopeFor(project, false);
         StubIndex index = StubIndex.getInstance();
         System.out.println("initListV2 start loop");
-        index.processAllKeys(PhpClassIndex.KEY, key -> {
-            if (key == null) {
-                return true;
-            }
-
-            if (!key.endsWith("controller")) {
-                return true;
-            }
-
-            index.processElements(PhpClassIndex.KEY, key, project, globalSearchScope, PhpClass.class, file -> {
-                PsiFile containingFile = file.getContainingFile();
-                if (containingFile == null) {
+        try {
+            index.processAllKeys(PhpClassIndex.KEY, key -> {
+                if (key == null) {
                     return true;
                 }
 
-                Collection<Method> methods = file.getMethods();
-                if (methods == null || methods.isEmpty()) {
+                if (!key.endsWith("controller")) {
                     return true;
                 }
 
-                String urlPath = UrlUtil.getUrlPathByPsiFile(containingFile);
-                for (Method method : methods) {
-                    if (method.getAccess().isPublic() && !method.getName().equals("__construct")) {
-                        String url = "/" + urlPath + "/" + UrlUtil.toUndline(method.getName());
-                        listTemp.add(new FilterByUrlNavigationItem(url, method));
-                        namesTemp.add(url);
+                index.processElements(PhpClassIndex.KEY, key, project, globalSearchScope, PhpClass.class, file -> {
+                    PsiFile containingFile = file.getContainingFile();
+                    if (containingFile == null) {
+                        return true;
                     }
-                }
 
+                    Collection<Method> methods = file.getMethods();
+                    if (methods == null || methods.isEmpty()) {
+                        return true;
+                    }
+
+                    String urlPath = UrlUtil.getUrlPathByPsiFile(containingFile);
+                    for (Method method : methods) {
+                        if (method.getAccess().isPublic() && !method.getName().equals("__construct")) {
+                            String url = "/" + urlPath + "/" + UrlUtil.toUndline(method.getName());
+                            listTemp.add(new FilterByUrlNavigationItem(url, method));
+                            namesTemp.add(url);
+                        }
+                    }
+
+                    return true;
+                });
                 return true;
-            });
-            return true;
-        }, globalSearchScope);
+            }, globalSearchScope);
+        } catch (Exception e) {
+            System.out.println(Arrays.toString(e.getStackTrace()));
+            return;
+        }
+
 
         System.out.println("initListV2 end loop");
         list = listTemp;
@@ -159,6 +171,7 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
     @NotNull
     @Override
     public String[] getNames(Project project, boolean b) {
+        this.initListV2(project);
         return names;
     }
 

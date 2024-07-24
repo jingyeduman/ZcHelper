@@ -30,6 +30,10 @@ public class FilterByUrlProvider extends DefaultChooseByNameItemProvider {
             pattern = pattern.substring(0, pattern.indexOf("?"));
         }
 
+        if (pattern.contains("/api/")) {
+            pattern = pattern.substring(pattern.indexOf("/api/") + "/api/".length());
+        }
+
         pattern = UrlUtil.toUndline(pattern);
         ArrayList<String> patterns = new ArrayList<>();
         for (String string : pattern.split("/")) {
