@@ -2,6 +2,7 @@ package com.wuguanping.zchelper.search;
 
 import com.intellij.navigation.ChooseByNameContributor;
 import com.intellij.navigation.NavigationItem;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -32,6 +33,8 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
     List<FilterByUrlNavigationItem> list = new ArrayList<>();
     String[] names = new String[0];
 
+    private static final Logger LOG = Logger.getInstance(FilterByUrlContributor.class);
+
     public FilterByUrlContributor(Project project) {
         //this.initList(project);
         this.initListV2(project);
@@ -56,6 +59,7 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
         StubIndex index = StubIndex.getInstance();
         System.out.println("initListV2 start loop");
         try {
+            ArrayList<String> controllerKeys = new ArrayList<>();
             index.processAllKeys(PhpClassIndex.KEY, key -> {
                 if (key == null) {
                     return true;
@@ -65,15 +69,25 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
                     return true;
                 }
 
-                index.processElements(PhpClassIndex.KEY, key, project, globalSearchScope, PhpClass.class, file -> {
+
+                controllerKeys.add(key);
+                return true;
+            }, globalSearchScope);
+
+            for (String controllerKey : controllerKeys) {
+                index.processElements(PhpClassIndex.KEY, controllerKey, project, globalSearchScope, PhpClass.class, file -> {
                     PsiFile containingFile = file.getContainingFile();
                     if (containingFile == null) {
-                        return true;
+                        return false;
+                    }
+
+                    if (file.isAbstract()) {
+                        return false;
                     }
 
                     Collection<Method> methods = file.getMethods();
                     if (methods == null || methods.isEmpty()) {
-                        return true;
+                        return false;
                     }
 
                     String urlPath = UrlUtil.getUrlPathByPsiFile(containingFile);
@@ -87,13 +101,14 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
 
                     return true;
                 });
-                return true;
-            }, globalSearchScope);
+            }
+
         } catch (Exception e) {
             System.out.println(Arrays.toString(e.getStackTrace()));
             return;
         }
 
+        
 
         System.out.println("initListV2 end loop");
         list = listTemp;
