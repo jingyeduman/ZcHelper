@@ -74,14 +74,9 @@ public class InstanceClassAction extends AnAction {
         boolean isService = selectedClassName.endsWith("Service");
         boolean isDao = selectedClassName.endsWith("Dao");
         boolean isUtil = selectedClassName.endsWith("Util");
-        System.out.println("selectedClassName" + selectedClassName);
-
-        System.out.println("isService " + isService);
-        System.out.println("isDao " + isDao);
-        System.out.println("isUtil " + isUtil);
 
         Field[] fields = phpClass.getOwnFields();
-        String preFieldName = null;
+        String preFieldName = "";
         int insertPos = 0;
         for (Field field : fields) {
             ASTNode node = field.getNode();
@@ -89,30 +84,21 @@ public class InstanceClassAction extends AnAction {
                 continue;
             }
 
-            System.out.println("field name " + field.getName());
             if (field.getName().equals(varName)) {
                 return;
             }
             boolean matchService = isService && field.getName().endsWith("Service");
             boolean matchDao = isDao && field.getName().endsWith("Dao");
             boolean matchUtil = isUtil && field.getName().endsWith("Util");
-
-            System.out.println("matchService " + matchService);
-            System.out.println("matchDao " + matchDao);
-            System.out.println("matchUtil " + matchUtil);
             if (matchService || matchDao || matchUtil) {
-
                 insertPos = node.getStartOffset();
                 insertPos += node.getTextLength() + 1;
                 preFieldName = node.getText().substring(1);
             }
         }
 
-        System.out.println("start 103");
-
-        if (insertPos == 0 && fields.length > 0) {
-            for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
+        if (insertPos == 0) {
+            for (Field field : fields) {
                 ASTNode node = field.getNode();
                 if (node == null) {
                     continue;
@@ -121,7 +107,6 @@ public class InstanceClassAction extends AnAction {
                 insertPos = node.getStartOffset();
                 insertPos += node.getTextLength() + 1;
                 preFieldName = node.getText().substring(1);
-                System.out.println("preFieldName" + preFieldName);
             }
         }
 
