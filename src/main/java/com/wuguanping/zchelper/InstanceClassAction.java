@@ -53,31 +53,27 @@ public class InstanceClassAction extends AnAction {
 
         Editor editor = CommonDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null) {
-            System.out.println("editor is null");
             return;
         }
 
-        PhpFile phpFile  = (PhpFile)PsiUtilBase.getPsiFileInEditor(editor, project);
-        if (phpFile == null) {
-            System.out.println("phpFile is null");
+        PsiFile eidtorPsiFile  = PsiUtilBase.getPsiFileInEditor(editor, project);
+        if (eidtorPsiFile == null) {
             return;
         }
 
-        PhpClass phpClass = PhpCodeEditUtil.findClassAtCaret(editor, phpFile);
-        if (phpClass == null) {
-            System.out.println("phpClass is null");
+        PhpClass editorClass = PhpCodeEditUtil.findClassAtCaret(editor, eidtorPsiFile);
+        if (editorClass == null) {
             return;
         }
-
-        System.out.println("class name " + phpClass.getName());
 
         boolean isService = selectedClassName.endsWith("Service");
         boolean isDao = selectedClassName.endsWith("Dao");
         boolean isUtil = selectedClassName.endsWith("Util");
 
-        Field[] fields = phpClass.getOwnFields();
+        Field[] fields = editorClass.getOwnFields();
         String preFieldName = "";
         int insertPos = 0;
+        boolean hasMatch = false;
         for (Field field : fields) {
             ASTNode node = field.getNode();
             if (node == null) {
@@ -90,93 +86,65 @@ public class InstanceClassAction extends AnAction {
             boolean matchService = isService && field.getName().endsWith("Service");
             boolean matchDao = isDao && field.getName().endsWith("Dao");
             boolean matchUtil = isUtil && field.getName().endsWith("Util");
-            if (matchService || matchDao || matchUtil) {
-                insertPos = node.getStartOffset();
-                insertPos += node.getTextLength() + 1;
+            if (matchService || matchDao || matchUtil || !hasMatch) {
+                insertPos = node.getStartOffset() + node.getTextLength() + 1;
                 preFieldName = node.getText().substring(1);
+                hasMatch = true;
             }
         }
 
-        if (insertPos == 0) {
-            for (Field field : fields) {
-                ASTNode node = field.getNode();
-                if (node == null) {
-                    continue;
-                }
-
-                insertPos = node.getStartOffset();
-                insertPos += node.getTextLength() + 1;
-                preFieldName = node.getText().substring(1);
-            }
-        }
-
-        if (insertPos == 0) {
-            ASTNode nameNode = phpClass.getNameNode();
-            while (nameNode != null) {
-                if (nameNode.getText().equals("{")) {
-                    insertPos = nameNode.getStartOffset() + 1;
-                    break;
-                }
-                nameNode = nameNode.getTreeNext();
-            }
-        }
-
-        Method ownConstructor = phpClass.getOwnConstructor();
+        Method ownConstructor = editorClass.getOwnConstructor();
         if (ownConstructor == null) {
             return;
         }
 
-        PsiElement[] children = ownConstructor.getChildren();
-        PsiElement[] children1 = children[2].getChildren();
-        int initInsertPos = ownConstructor.getLastChild().getTextOffset() + 1;
+        if (insertPos == 0) {
+            insertPos = ownConstructor.getNode().getTreePrev().getStartOffset();
+        }
 
-        for (int i = 0; i < children1.length; i++) {
-            var child = children1[i];
-            if (!preFieldName.isEmpty()) {
-                String regex = "\\$this->(\\S+)";
-                Pattern compile = Pattern.compile(regex);
-                Matcher matcher = compile.matcher(child.getText());
-                if (matcher.find()) {
-                    String matchFieldName = matcher.group(1);
-                    if (matchFieldName.equals(preFieldName)) {
-                        initInsertPos = child.getTextOffset() + child.getTextLength();
-                        break;
-                    }
-                }
-            } else {
+        int initInsertPos = ownConstructor.getLastChild().getTextOffset() + 1;
+        PsiElement[] children = ownConstructor.getLastChild().getChildren();
+        for (PsiElement child : children) {
+            if (preFieldName.isBlank()) {
                 initInsertPos = child.getTextOffset() + child.getTextLength();
+                continue;
+            }
+
+            String regex = "\\$this->(\\S+)";
+            Pattern compile = Pattern.compile(regex);
+            Matcher matcher = compile.matcher(child.getText());
+            if (matcher.find()) {
+                String matchFieldName = matcher.group(1);
+                if (matchFieldName.equals(preFieldName)) {
+                    initInsertPos = child.getTextOffset() + child.getTextLength();
+                    break;
+                }
             }
         }
-        System.out.println("initInsertPos" + initInsertPos);
 
         int finalInsertPos = insertPos;
         int finalInitInsertPos = initInsertPos;
-        WriteCommandAction.runWriteCommandAction(project, new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(() -> {
-                    StringBuffer textBuf = new StringBuffer();
-                    textBuf.append("\n");
-                    textBuf.append("\n");
-                    textBuf.append("/**\n*@var className\n*/".replace("className", selectedClassName));
-                    textBuf.append("private $varName;".replace("varName", varName));
+        WriteCommandAction.runWriteCommandAction(project, () -> ApplicationManager.getApplication().runWriteAction(() -> {
+            StringBuffer textBuf = new StringBuffer();
+            textBuf.append("\n");
+            textBuf.append("\n");
+            textBuf.append("/**\n*@var className\n*/".replace("className", selectedClassName));
+            textBuf.append("private $varName;".replace("varName", varName));
 
-                    editor.getDocument().insertString(finalInsertPos, textBuf);
-                    int endPos1 = finalInsertPos + textBuf.length();
+            editor.getDocument().insertString(finalInsertPos, textBuf);
+            int endPos1 = finalInsertPos + textBuf.length();
 
-                    StringBuffer textBuf1 = new StringBuffer();
-                    textBuf1.append("\n");
-                    textBuf1.append("$this->varName = \\Zc::singleton(className::class);".replace("className", selectedClassName).replace("varName", varName));
+            StringBuffer textBuf1 = new StringBuffer();
+            textBuf1.append("\n");
+            textBuf1.append("$this->varName = \\Zc::singleton(className::class);".replace("className", selectedClassName).replace("varName", varName));
 
-                    int insertPos = finalInitInsertPos + textBuf.length();
-                    editor.getDocument().insertString(insertPos, textBuf1);
-                    int endPos2 = insertPos + textBuf1.length();
+            int insertPos1 = finalInitInsertPos + textBuf.length();
+            editor.getDocument().insertString(insertPos1, textBuf1);
+            int endPos2 = insertPos1 + textBuf1.length();
 
-                    CodeStyleManager.getInstance(project).reformatText(phpFile, finalInsertPos, endPos1);
-                    CodeStyleManager.getInstance(project).reformatText(phpFile, insertPos, endPos2);
-                });
-            }
-        });
+            CodeStyleManager.getInstance(project).reformatText(eidtorPsiFile, finalInsertPos, endPos1);
+            CodeStyleManager.getInstance(project).reformatText(eidtorPsiFile, insertPos1, endPos2);
+        }));
     }
 
     @Override
