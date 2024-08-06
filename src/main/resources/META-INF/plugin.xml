@@ -50,10 +50,13 @@
             <add-to-group group-id="WelcomeScreen.Documentation" anchor="last"/>
         </action>
 
-        <action id="com.wuguanping.zchelper.GetApiPath" class="com.wuguanping.zchelper.GetApiPathAction" text="Copy Api Path"
-                description="获取api的访问路径">
+        <action id="com.wuguanping.zchelper.GetApiPathAction" class="com.wuguanping.zchelper.GetApiPathAction" text="Copy Api Path">
             <add-to-group group-id="EditorPopupMenu2" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift C"/>
+        </action>
+
+        <action id="com.wuguanping.zchelper.GetApiUrlAction" class="com.wuguanping.zchelper.GetApiUrlAction" text="Copy Api URL">
+            <add-to-group group-id="EditorPopupMenu2" relative-to-action="com.wuguanping.zchelper.GetApiPathAction"
+                          anchor="before"/>
         </action>
     </actions>
 </idea-plugin>

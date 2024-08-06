@@ -1,6 +1,8 @@
 package com.wuguanping.zchelper.util;
 
 import com.google.common.base.CaseFormat;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.util.text.Strings;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.Url;
@@ -9,6 +11,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class UrlUtil {
+
+    public static String getUrlPathByAnActionEvent(AnActionEvent e) {
+        if (e == null) {
+            System.out.println("e is null");
+            return null;
+        }
+
+        System.out.println("start GetApiPathAction");
+        PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
+        if (file == null) {
+            System.out.println("file is null");
+            return null;
+        }
+
+        return getUrlPathByPsiFile(file);
+    }
+
     public static String getUrlPathByPsiFile(PsiFile file) {
         String path = file.getVirtualFile().getPath();
         String[] pathParts = path.split("/");
