@@ -78,19 +78,23 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
                 index.processElements(PhpClassIndex.KEY, controllerKey, project, globalSearchScope, PhpClass.class, file -> {
                     PsiFile containingFile = file.getContainingFile();
                     if (containingFile == null) {
-                        return false;
+                        return true;
                     }
 
                     if (file.isAbstract()) {
-                        return false;
+                        return true;
                     }
 
                     Collection<Method> methods = file.getMethods();
                     if (methods == null || methods.isEmpty()) {
-                        return false;
+                        return true;
                     }
 
                     String urlPath = UrlUtil.getUrlPathByPsiFile(containingFile);
+                    if (urlPath == null) {
+                        return true;
+                    }
+
                     for (Method method : methods) {
                         if (method.getAccess().isPublic() && !method.getName().equals("__construct")) {
                             String url = "/" + urlPath + "/" + UrlUtil.toUndline(method.getName());
@@ -151,6 +155,10 @@ public class FilterByUrlContributor implements ChooseByNameContributor {
             }
 
             String urlPath = UrlUtil.getUrlPathByPsiFile(file);
+            if (urlPath == null) {
+                continue;
+            }
+
             file.accept(new PsiRecursiveElementVisitor() {
                 @Override
                 public void visitElement(@NotNull PsiElement element) {

@@ -3,9 +3,14 @@ package com.wuguanping.zchelper.util;
 import com.google.common.base.CaseFormat;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.util.text.Strings;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Url;
+import com.jetbrains.php.lang.psi.elements.Method;
+import com.jetbrains.php.lang.psi.elements.PhpClass;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,14 +19,44 @@ public class UrlUtil {
 
     public static String getUrlPathByAnActionEvent(AnActionEvent e) {
         if (e == null) {
-            System.out.println("e is null");
             return null;
         }
 
-        System.out.println("start GetApiPathAction");
         PsiFile file = e.getData(CommonDataKeys.PSI_FILE);
         if (file == null) {
-            System.out.println("file is null");
+            return null;
+        }
+
+        Editor editor = e.getData(CommonDataKeys.EDITOR);
+        if (editor == null) {
+            return null;
+        }
+
+        int offset = editor.getCaretModel().getCurrentCaret().getOffset();
+        PsiElement element = file.findElementAt(offset);
+        Method containingMethod = PsiTreeUtil.getParentOfType(element, Method.class);
+        if (containingMethod == null) {
+            System.out.println("containingMethod is null");
+            return null;
+        }
+
+        if (containingMethod.getName().substring(0, 2).equals("__")) {
+            return null;
+        }
+        if (!containingMethod.getAccess().isPublic()) {
+            return null;
+        }
+
+        PhpClass containingClass = containingMethod.getContainingClass();
+        if (containingClass == null) {
+            System.out.println("containingClass is null");
+            return null;
+        }
+
+        String className = containingClass.getName();
+        String controllerKeywords = "Controller";
+        if (!className.endsWith(controllerKeywords)) {
+            System.out.println("controllerKeywords is not match");
             return null;
         }
 
@@ -46,6 +81,9 @@ public class UrlUtil {
             }
         }
 
+        if (!find) {
+            return null;
+        }
         String controller = getControllerNameByFileName(fileName);
         apiPathParts.add(controller);
         return Strings.join(apiPathParts, "/");
