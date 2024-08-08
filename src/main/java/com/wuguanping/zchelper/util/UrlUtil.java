@@ -40,9 +40,11 @@ public class UrlUtil {
             return null;
         }
 
-        if (containingMethod.getName().substring(0, 2).equals("__")) {
+        String methodName = containingMethod.getName();
+        if (methodName.startsWith("__")) {
             return null;
         }
+
         if (!containingMethod.getAccess().isPublic()) {
             return null;
         }
@@ -60,7 +62,7 @@ public class UrlUtil {
             return null;
         }
 
-        return getUrlPathByPsiFile(file);
+        return getUrlPathByPsiFile(file) + "/" + toUndline(methodName);
     }
 
     public static String getUrlPathByPsiFile(PsiFile file) {
